@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "684865490607",
+    "project_id": "space-ball-9d5d0",
+    "storage_bucket": "space-ball-9d5d0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:684865490607:android:823c0546fcf2cd668b0e5a",
+        "android_client_info": {
+          "package_name": "com.rostislav.spaceball"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnPOissHXJwxuT8aoyOCM5xWgY890ZbLw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

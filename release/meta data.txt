@@ -1,0 +1,8 @@
+alias: Rostenko
+pass:  FlamenKoCertUn12431o
+
+policy: https://doc-hosting.flycricket.io/space-ball-privacy-policy/71d8285b-32fa-419a-ac1c-e613ad205129/privacy
+
+terms: https://doc-hosting.flycricket.io/space-ball-terms-of-use/f3d17a61-69ac-49d5-bb04-2a597eddb155/terms
+
+https://jade-tiramisu-a5b821.netlify.app/app-ads.txt
