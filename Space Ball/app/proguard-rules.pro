@@ -1,11 +1,28 @@
--keepclassmembers class com.badlogic.gdx.physics.box2d.World {
-   boolean contactFilter(long, long);
-   void    beginContact(long);
-   void    endContact(long);
-   void    preSolve(long, long);
-   void    postSolve(long, long);
-   boolean reportFixture(long);
-   float   reportRayFixture(long, float, float, float, float, float);
+# ── LibGDX ────────────────────────────────────────────────────────────
+# Box2D викликає ці методи з нативного коду через JNI.
+# R8 таких викликів не бачить і вирізає методи як мертві.
+-keep class com.badlogic.gdx.physics.box2d.** { *; }
+-keep class com.badlogic.gdx.utils.** { *; }
+-keep class com.badlogic.gdx.backends.android.** { *; }
+
+-keepclassmembers class com.badlogic.gdx.backends.android.AndroidInput* {
+    <init>(com.badlogic.gdx.Application, android.content.Context, java.lang.Object,
+           com.badlogic.gdx.backends.android.AndroidApplicationConfiguration);
 }
 
+-dontwarn com.badlogic.gdx.**
+
+#LibGDX -----------------------------------------------------------------
 -dontwarn javax.annotation.Nullable
+
+-verbose
+
+-dontwarn android.support.**
+-dontwarn com.badlogic.gdx.backends.android.AndroidFragmentApplication
+
+-keep public class com.badlogic.gdx.scenes.scene2d.** { *; }
+-keep public class com.badlogic.gdx.graphics.g2d.BitmapFont { *; }
+-keep public class com.badlogic.gdx.graphics.Color { *; }
+
+-keepattributes LineNumberTable,SourceFile
+-renamesourcefileattribute SourceFile

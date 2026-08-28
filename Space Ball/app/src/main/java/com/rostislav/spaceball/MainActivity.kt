@@ -1,29 +1,22 @@
 package com.rostislav.spaceball
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.view.View
-import android.view.WindowMetrics
-import androidx.annotation.ColorRes
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.games.AuthenticationResult
 import com.google.android.gms.games.GamesSignInClient
 import com.google.android.gms.games.PlayGames
-import com.google.android.gms.tasks.Task
+import com.rostislav.spaceball.ads.AdManager
 import com.rostislav.spaceball.databinding.ActivityMainBinding
 import com.rostislav.spaceball.util.Lottie
-import com.rostislav.spaceball.util.Once
 import com.rostislav.spaceball.util.log
 import kotlinx.coroutines.*
-import kotlin.system.exitProcess
+import java.util.concurrent.atomic.AtomicBoolean
 
 class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
 
@@ -32,81 +25,154 @@ class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
     }
 
     private val coroutine = CoroutineScope(Dispatchers.Default)
-    private val onceExit  = Once()
+    private val onceExit  = AtomicBoolean(true)
 
     private lateinit var binding : ActivityMainBinding
     lateinit var lottie          : Lottie
+    lateinit var adManager       : AdManager private set
+
+    // ---------------------------------------------------------------------------------------
+    // Google Play Games
+    // ---------------------------------------------------------------------------------------
 
     var isGPGAuthenticated = false
-    var gamesSignInClient: GamesSignInClient? = null
+        private set
 
-    // Ads
-    private val adSize: AdSize
-        get() {
-            val displayMetrics = resources.displayMetrics
-            val adWidthPixels =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    val windowMetrics: WindowMetrics = this.windowManager.currentWindowMetrics
-                    windowMetrics.bounds.width()
-                } else {
-                    displayMetrics.widthPixels
-                }
-            val density = displayMetrics.density
-            val adWidth = (adWidthPixels / density).toInt()
-            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth)
-        }
-    private val adView by lazy { AdView(this) }
+    /** Рахунок, який не вдалося відправити без авторизації — відправимо одразу після входу. */
+    private var pendingScore: Long? = null
+
+    private var gamesSignInClient: GamesSignInClient? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        requestNotificationPermission()
         initialize()
-        initializeAdMob()
+
+        adManager = AdManager(this, binding.root)
+        adManager.initialize()
+
         lottie.showLoader()
 
         gamesSignInClient = PlayGames.getGamesSignInClient(this)
+        checkGPGAuthentication()
+    }
 
-        gamesSignInClient?.let { gsc ->
-            gsc.isAuthenticated().addOnCompleteListener { isAuthenticatedTask: Task<AuthenticationResult> ->
-                isGPGAuthenticated = (isAuthenticatedTask.isSuccessful && isAuthenticatedTask.result.isAuthenticated)
-                log("PlayGames isAuthenticated = $isGPGAuthenticated")
+    override fun onResume() {
+        super.onResume()
+        if (::adManager.isInitialized) adManager.onResume()
+    }
 
-                if (isGPGAuthenticated) {
-                    PlayGames.getPlayersClient(this).currentPlayer.addOnCompleteListener { mTask ->
-                        log("PlayGames playerId = ${mTask.result.playerId}")
-                    }
-                }
-            }
-        }
+    override fun onPause() {
+        if (::adManager.isInitialized) adManager.onPause()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        if (::adManager.isInitialized) adManager.onDestroy()
+        super.onDestroy()
     }
 
     override fun exit() {
-        onceExit.once {
+        if (onceExit.getAndSet(false)) {
             log("exit")
-            coroutine.launch(Dispatchers.Main) {
-                finishAndRemoveTask()
-                delay(100)
-                exitProcess(0)
-            }
+            finish()
         }
     }
 
     private fun initialize() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        lottie       = Lottie(binding)
+        lottie = Lottie(binding)
     }
 
-    fun setNavigationBarColor(@ColorRes colorId: Int) {
-        coroutine.launch(Dispatchers.Main) {
-            window.navigationBarColor = ContextCompat.getColor(this@MainActivity, colorId)
+    // ---------------------------------------------------------------------------------------
+    // Ads
+    // ---------------------------------------------------------------------------------------
+
+    /**
+     * Показує interstitial (якщо готовий і дозволяє частотний ліміт).
+     * [onDone] викликається завжди — і після закриття реклами, і якщо її не було.
+     */
+    fun showInterstitial(onDone: () -> Unit) {
+        adManager.showInterstitial(onDone)
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Google Play Games: auth + leaderboard
+    // ---------------------------------------------------------------------------------------
+
+    private fun checkGPGAuthentication() {
+        gamesSignInClient?.isAuthenticated()?.addOnCompleteListener { task ->
+            val authenticated = task.isSuccessful && task.result.isAuthenticated
+            log("PlayGames isAuthenticated = $authenticated")
+            setGPGAuthenticated(authenticated)
+
+            if (authenticated) {
+                PlayGames.getPlayersClient(this).currentPlayer.addOnSuccessListener { player ->
+                    log("PlayGames playerId = ${player.playerId}")
+                }
+            }
         }
     }
 
+    private fun setGPGAuthenticated(value: Boolean) {
+        isGPGAuthenticated = value
+
+        if (value) {
+            // Досилаємо рахунок, який чекав на авторизацію
+            pendingScore?.let { score ->
+                pendingScore = null
+                submitLeaderboardScore(score)
+            }
+        }
+    }
+
+    /**
+     * Безпечна відправка рахунку в лідерборд:
+     * якщо користувач не авторизований — рахунок запам'ятовується
+     * і відправляється автоматично після входу.
+     */
+    fun submitLeaderboardScore(score: Long) {
+        if (score <= 0) return
+
+        if (!isGPGAuthenticated) {
+            pendingScore = maxOf(pendingScore ?: 0L, score)
+            log("Leaderboard: not authenticated, pending score = $pendingScore")
+            return
+        }
+
+        PlayGames.getLeaderboardsClient(this)
+            .submitScoreImmediate(getString(R.string.leaderboard_number_of_stars), score)
+            .addOnSuccessListener { log("Leaderboard: score $score submitted") }
+            .addOnFailureListener { e ->
+                log("Leaderboard: submit failed: ${e.message}")
+                pendingScore = maxOf(pendingScore ?: 0L, score)
+            }
+    }
+
     fun showLeaderboard() {
+        if (!isGPGAuthenticated) {
+            // Спочатку логінимось, потім відкриваємо лідерборд
+            gamesSignInClient?.signIn()?.addOnCompleteListener { task ->
+                val authenticated = task.isSuccessful && task.result.isAuthenticated
+                setGPGAuthenticated(authenticated)
+                if (authenticated) openLeaderboardUI()
+            }
+            return
+        }
+        openLeaderboardUI()
+    }
+
+    private fun openLeaderboardUI() {
         PlayGames.getLeaderboardsClient(this)
             .getLeaderboardIntent(getString(R.string.leaderboard_number_of_stars))
             .addOnSuccessListener { intent -> startActivityForResult(intent, RC_LEADERBOARD_UI) }
+            .addOnFailureListener { e ->
+                log("Leaderboard: intent failed: ${e.message}")
+                // Токен міг протухнути — пробуємо перевірити авторизацію ще раз
+                checkGPGAuthentication()
+            }
     }
 
     override fun onActivityReenter(resultCode: Int, data: Intent?) {
@@ -114,33 +180,22 @@ class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
         log("Hello: $resultCode")
     }
 
-    // Ads -----------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // PERMISSIONS
+    // ------------------------------------------------------------------------
+    /**
+     * Push permission (Android 13+)
+     * */
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> log("POST_NOTIFICATIONS granted = $granted") }
 
-    private fun initializeAdMob() {
-        coroutine.launch(Dispatchers.IO) {
-            MobileAds.initialize(this@MainActivity)
-            withContext(Dispatchers.Main) { addBannerAd() }
-        }
-    }
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
 
-    private fun addBannerAd() {
-        adView.adUnitId = getString(R.string.ad_banner_id)
-        adView.setAdSize(adSize)
-        adView.id = View.generateViewId()
+        val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
-        binding.root.addView(adView)
-
-        val constraintSet = ConstraintSet()
-        constraintSet.clone(binding.root)
-
-        constraintSet.connect(adView.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
-        constraintSet.connect(adView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
-        constraintSet.connect(adView.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
-
-        constraintSet.applyTo(binding.root)
-
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
+        if (!granted) notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.rostislav.spaceball.appContext
@@ -14,6 +15,11 @@ object GameDataStoreManager: AbstractDataStore() {
 
     object Stars: AbstractDataStore.DataStoreElement<Long>() {
         override val key = longPreferencesKey("stars")
+    }
+
+    /** Індекс максимального відкритого рівня (0 = відкритий лише перший). */
+    object MaxLevel: AbstractDataStore.DataStoreElement<Int>() {
+        override val key = intPreferencesKey("max_level")
     }
 
 }
@@ -39,4 +45,3 @@ abstract class AbstractDataStore {
         }
     }
 }
-

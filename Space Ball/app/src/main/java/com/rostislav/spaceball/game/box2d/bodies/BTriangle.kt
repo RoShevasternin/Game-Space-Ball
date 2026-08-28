@@ -14,5 +14,5 @@ class BTriangle(override val screenBox2d: AdvancedBox2dScreen): AbstractBody() {
         type = BodyDef.BodyType.StaticBody
     }
     override val fixtureDef = FixtureDef()
-    override var actor: AdvancedGroup? = AImage(screenBox2d, screenBox2d.game.assetsAllUtil.bList[AbstractGameScreen.level])
+    override var actor: AdvancedGroup? = AImage(screenBox2d, screenBox2d.game.assetsAllUtil.bList[AbstractGameScreen.theme])
 }

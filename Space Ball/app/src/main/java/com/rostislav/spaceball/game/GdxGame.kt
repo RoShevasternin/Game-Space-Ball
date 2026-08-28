@@ -13,6 +13,7 @@ import com.rostislav.spaceball.game.manager.util.SoundUtil
 import com.rostislav.spaceball.game.manager.util.SpriteUtil
 import com.rostislav.spaceball.game.screens.SpaceLoaderScreen
 import com.rostislav.spaceball.game.utils.advanced.AdvancedGame
+import com.rostislav.spaceball.game.utils.dataStore.LevelUtil
 import com.rostislav.spaceball.game.utils.dataStore.StarUtil
 import com.rostislav.spaceball.game.utils.disposeAll
 import com.rostislav.spaceball.util.log
@@ -38,6 +39,7 @@ class GdxGame(val activity: com.rostislav.spaceball.MainActivity) : AdvancedGame
     val coroutine = CoroutineScope(Dispatchers.Default)
 
     val starsUtil = StarUtil(coroutine)
+    val levelUtil = LevelUtil(coroutine)
 
     override fun create() {
         navigationManager = NavigationManager(this)

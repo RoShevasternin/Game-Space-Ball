@@ -1,5 +1,6 @@
 package com.rostislav.spaceball.game.screens
 
+import com.rostislav.spaceball.ads.AppOpenGate
 import com.rostislav.spaceball.game.GdxGame
 import com.rostislav.spaceball.game.manager.MusicManager
 import com.rostislav.spaceball.game.manager.SoundManager
@@ -10,8 +11,10 @@ import com.rostislav.spaceball.game.utils.advanced.AdvancedScreen
 import com.rostislav.spaceball.game.utils.advanced.AdvancedStage
 import com.rostislav.spaceball.game.utils.region
 import com.rostislav.spaceball.util.log
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 class SpaceLoaderScreen(override val game: GdxGame) : AdvancedScreen() {
 
@@ -90,21 +93,25 @@ class SpaceLoaderScreen(override val game: GdxGame) : AdvancedScreen() {
                     if (progress % 25 == 0) log("progress = $progress%")
                     if (progress == 100) isFinishProgress = true
 
-                    //delay(16)
-                    //delay((2..5).shuffled().first().toLong())
+                    // Плавна анімація прогресу (~1.6 с) — заодно дає рекламі час завантажитись
+                    delay(16.milliseconds)
                 }
             }
         }
     }
 
     private fun isFinish() {
-        if (isFinishProgress) {
-            isFinishProgress = false
+        if (isFinishProgress.not()) return
 
-            stageUI.root.animHide(TIME_ANIM_ALPHA) {
-                game.activity.lottie.hideLoader()
-                game.navigationManager.navigate(SpaceMenuScreen::class.java.name)
-            }
+        // Тримаємо лоадер, доки App Open реклама не закриється (або не спрацює таймаут).
+        // Інакше реклама вилітає вже поверх меню.
+        if (AppOpenGate.isResolved.not()) return
+
+        isFinishProgress = false
+
+        stageUI.root.animHide(TIME_ANIM_ALPHA) {
+            game.activity.lottie.hideLoader()
+            game.navigationManager.navigate(SpaceMenuScreen::class.java.name)
         }
     }
 

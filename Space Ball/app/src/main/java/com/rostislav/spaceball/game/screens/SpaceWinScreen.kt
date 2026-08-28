@@ -9,7 +9,9 @@ import com.rostislav.spaceball.game.utils.actor.animShow
 import com.rostislav.spaceball.game.utils.actor.setOnClickListener
 import com.rostislav.spaceball.game.utils.advanced.AdvancedScreen
 import com.rostislav.spaceball.game.utils.advanced.AdvancedStage
+import com.rostislav.spaceball.game.utils.level.LevelGenerator
 import com.rostislav.spaceball.game.utils.region
+import com.rostislav.spaceball.game.utils.runGDX
 
 class SpaceWinScreen(override val game: GdxGame): AdvancedScreen() {
 
@@ -40,17 +42,28 @@ class SpaceWinScreen(override val game: GdxGame): AdvancedScreen() {
         menu.apply {
             setBounds(119f, 653f, 408f, 195f)
             setOnClickListener(game.soundUtil) {
-                stageUI.root.animHide(TIME_ANIM_ALPHA) {
-                    game.navigationManager.back()
+                // Interstitial показується між рівнями; onDone спрацює і якщо реклами не було
+                game.activity.showInterstitial {
+                    runGDX {
+                        stageUI.root.animHide(TIME_ANIM_ALPHA) {
+                            game.navigationManager.back()
+                        }
+                    }
                 }
             }
         }
         next.apply {
             setBounds(553f, 653f, 408f, 195f)
             setOnClickListener(game.soundUtil) {
-                stageUI.root.animHide(TIME_ANIM_ALPHA) {
-                    AbstractGameScreen.level = (0..3).random()
-                    game.navigationManager.navigate(AbstractGameScreen::class.java.name)
+                game.activity.showInterstitial {
+                    runGDX {
+                        stageUI.root.animHide(TIME_ANIM_ALPHA) {
+                            // Наступний рівень по порядку; після останнього — знову на початок
+                            AbstractGameScreen.level =
+                                (AbstractGameScreen.level + 1) % LevelGenerator.LEVEL_COUNT
+                            game.navigationManager.navigate(AbstractGameScreen::class.java.name)
+                        }
+                    }
                 }
             }
         }

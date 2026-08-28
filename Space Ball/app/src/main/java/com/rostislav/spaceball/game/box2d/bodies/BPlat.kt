@@ -21,7 +21,7 @@ class BPlat(override val screenBox2d: AdvancedBox2dScreen): AbstractBody() {
         Color.valueOf("011C45"),
         Color.valueOf("4F2A71"),
         Color.valueOf("C82B50"),
-    )[AbstractGameScreen.level]
+    )[AbstractGameScreen.theme]
 
     override var actor: AdvancedGroup? = AImage(screenBox2d, screenBox2d.drawerUtil.getRegion(color))
 }
