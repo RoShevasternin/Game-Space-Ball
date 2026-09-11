@@ -52,6 +52,30 @@ adb exec-out screencap -p > shot.png && sips -Z 800 shot.png --out shot_s.png
 python3 -m venv /tmp/venv && /tmp/venv/bin/pip install pillow
 /tmp/venv/bin/python tools/compose_store_shots.py          # читає store/raw/*.png
 ```
+## Рекламне відео (TikTok, 9:16)
+
+`screenrecord` не пише звук, тому в режимі `shots` гра логує кожен звук як
+`SFX <файл> <epoch ms> <гучність> <висота>`, а скрипт збірки відтворює доріжку з оригінальних
+файлів гри. На кожен кліп потрібні три файли в `store/video/raw/` (у .gitignore):
+```bash
+adb logcat -c
+adb shell am start -n com.rostislav.spaceball/.MainActivity --ez shots true --ei level 45 --es play "D0.0,R0.3,D0.9"
+adb shell "date +%s%3N > /sdcard/x.t; screenrecord --time-limit 20 --bit-rate 16000000 --size 1080x2400 /sdcard/x.mp4"
+adb pull /sdcard/x.mp4 store/video/raw/nebulon.mp4; adb pull /sdcard/x.t store/video/raw/nebulon.t
+adb logcat -d | grep " SFX " | awk '{for(i=1;i<=NF;i++) if($i=="SFX") print $(i+1),$(i+2),$(i+3),$(i+4)}' > store/video/raw/nebulon.sfx
+```
+Ролик складає `tools/build_tiktok_video.py` (ffmpeg із пакета `imageio-ffmpeg`): сегменти,
+підписи, xfade, фінальна заставка, аудіо → `store/video/spaceball_tiktok_27s.mp4` і `_15s.mp4`.
+Список сегментів — `SEGMENTS`/`SHORT`; `LATENCY` (0.35 с) — затримка старту screenrecord
+відносно `date`, перевірена по кадрах стрибка. Музику додавати в TikTok (Commercial Music
+Library), оригінальний звук у редакторі TikTok — на 30–50 %.
+
+## Іконка
+
+`tools/make_icon_variants.py` малює варіанти адаптивної іконки (1024 px = 108dp, безпечна
+зона 66dp) і порівняльний лист → `store/icon_variants/`. Кожен варіант має `_bg`, `_fg`,
+`_mono` (для Material You) і `_full`.
+
 **Увага:** debug- і release-збірки ділять один DataStore на пристрої, тож автоперемоги
 (`--ez win`) під час тестів відкривають рівні «по-справжньому». Скинути прогрес:
 `adb shell pm clear com.rostislav.spaceball`.

@@ -56,7 +56,8 @@ Y вгору. На телефоні 1080×2400 гра летербоксован
 (`UiShader`/`NeonPanel`), частинки/слід/трясіння, процедурні звуки (`scratchpad/synth.py`
 не в репо — 15 WAV у `assets/sound`).
 
-Маркетингові скріншоти: `store/` (готові PNG для Play Console) + `tools/compose_store_shots.py`,
+Маркетинг: `store/` — скріншоти для Play Console, `store/video/` — ролики TikTok 9:16,
+`store/icon_variants/` — варіанти іконки; скрипти в `tools/` (Pillow + imageio-ffmpeg у venv),
 режим зйомки `--ez shots true` — див. `docs/TESTING.md`.
 
 Не зроблено / ідеї: справжні спрайти для платформ, воріт, порталів, дір, астероїдів
