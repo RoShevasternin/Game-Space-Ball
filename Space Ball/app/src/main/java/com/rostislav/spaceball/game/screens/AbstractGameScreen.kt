@@ -74,6 +74,10 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
         var isDaily = false
         /** Чи грали звичайний рівень за цей запуск — тоді список рівнів відкривається на [level]. */
         var hasPlayed = false
+
+        /** Поразки на рівнях за цей запуск: після [SKIP_AFTER_FAILS] пропонуємо пропуск за рекламу. */
+        private val failCounts = HashMap<Int, Int>()
+        private const val SKIP_AFTER_FAILS = 2
         /** Результат останнього пройденого рівня — читає екран перемоги. */
         var lastResult: LevelResult? = null
 
@@ -723,6 +727,7 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
     private fun die(cause: String) {
         if (isDead || isWon || invulnerableTime > 0f) return
         isDead = true
+        if (!isDaily) failCounts[level] = (failCounts[level] ?: 0) + 1
 
         runGDX {
             isPauseWorld = true
@@ -758,9 +763,14 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
             }
         })
 
+        // Пропуск рівня за рекламу — після кількох поразок на ще не пройденому рівні
+        val showSkip = !isDaily && (failCounts[level] ?: 0) >= SKIP_AFTER_FAILS && !game.levelUtil.isCompleted(level)
+        val buttons  = 2 + (if (!continueUsed) 1 else 0) + (if (showSkip) 1 else 0)
+        val panelBottom = 960f - (buttons - 1) * 180f - 40f
+
         val panel = NeonPanel(drawerUtil.whiteRegion, Color.valueOf("241454"), Color.valueOf("0C0724"), planet.accent, planet.accent2).apply {
             radius = 48f; glow = 0.8f; sheen = 0f
-            setBounds(110f, 560f, WIDTH - 220f, 800f)
+            setBounds(110f, panelBottom, WIDTH - 220f, 1360f - panelBottom)
         }
         overlay.addActor(panel)
 
@@ -792,6 +802,23 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
             y -= 180f
         }
 
+        if (showSkip) {
+            val canAd = game.activity.isRewardedReady()
+            val skip = PillButton(drawerUtil, "SKIP LEVEL  (AD)", fontBtn, PillButton.Style.ORANGE, soundUtil = game.soundUtil)
+            skip.setBounds(bx, y, btnW, btnH)
+            skip.enabledLook = canAd
+            skip.setOnClickListener {
+                skip.enabledLook = false
+                var rewarded = false
+                game.activity.showRewarded(
+                    onReward = { rewarded = true },
+                    onDone   = { runGDX { if (rewarded) skipLevel() else skip.enabledLook = game.activity.isRewardedReady() } },
+                )
+            }
+            overlay.addActor(skip)
+            y -= 180f
+        }
+
         val retry = PillButton(drawerUtil, "RETRY", fontBtn, PillButton.Style.PURPLE, soundUtil = game.soundUtil).apply {
             setBounds(bx, y, btnW, btnH)
             setOnClickListener { retryLevel() }
@@ -816,6 +843,17 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
                 runGDX { game.navigationManager.navigate(AbstractGameScreen::class.java.name) }
             }
             else game.navigationManager.navigate(AbstractGameScreen::class.java.name)
+        }
+    }
+
+    /** Пропуск рівня (після rewarded): рівень рахується пройденим без зірок, одразу наступний. */
+    private fun skipLevel() {
+        game.levelUtil.skip(level)
+        failCounts.remove(level)
+        game.soundUtil.apply { play(WARP, 0.8f) }
+        stageUI.root.animHide(TIME_ANIM_ALPHA) {
+            level = game.levelUtil.nextLevelAfter(level)
+            game.navigationManager.navigate(AbstractGameScreen::class.java.name)
         }
     }
 
@@ -892,6 +930,7 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
         } else {
             newBest = starsCollected > game.levelUtil.rating(level)
             game.levelUtil.complete(level, starsCollected)
+            failCounts.remove(level)
         }
         game.activity.submitLeaderboardScore(game.starsUtil.stars)
         lastResult = LevelResult(level, starsCollected, isDaily, bonus, newBest)
@@ -912,7 +951,7 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
         val bubble = HintBubble(drawerUtil, fontHint, planet.accent, planet.accent2)
 
         private val enabled = DebugFlags.forceTutorial(game.activity) ||
-            (!isDaily && level <= 1 && game.levelUtil.rating(level) == 0 && !game.hintUtil.isSeen("tut$level"))
+            (!isDaily && level <= 1 && !game.levelUtil.isCompleted(level) && !game.hintUtil.isSeen("tut$level"))
         private var step = -1
         private var autoHide = 0f
         private var pointerActor: Actor? = null

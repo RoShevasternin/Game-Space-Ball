@@ -56,6 +56,10 @@ Y вгору. На телефоні 1080×2400 гра летербоксован
 (`UiShader`/`NeonPanel`), частинки/слід/трясіння, процедурні звуки (`scratchpad/synth.py`
 не в репо — 15 WAV у `assets/sound`).
 
+Відкриття рівнів: вікно з 3 не пройдених рівнів у планеті, нова планета після 10/15, «SKIP LEVEL
+(AD)» після 2 поразок (`LevelUtil`, див. `docs/GAMEPLAY.md`). Іконка — варіант C Horizon
+(`tools/install_icon.py`), іконка для Play Console — `store/play_icon_512.png`.
+
 Маркетинг: `store/` — скріншоти для Play Console, `store/video/` — ролики TikTok 9:16,
 `store/icon_variants/` — варіанти іконки; скрипти в `tools/` (Pillow + imageio-ffmpeg у venv),
 режим зйомки `--ez shots true` — див. `docs/TESTING.md`.

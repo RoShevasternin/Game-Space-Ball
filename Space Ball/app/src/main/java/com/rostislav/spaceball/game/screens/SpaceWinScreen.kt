@@ -152,7 +152,8 @@ class SpaceWinScreen(override val game: GdxGame): AdvancedScreen() {
                             } else {
                                 // Наступний рівень по порядку; після останнього — знову на початок
                                 AbstractGameScreen.isDaily = false
-                                AbstractGameScreen.level = (result.level + 1) % LevelGenerator.LEVEL_COUNT
+                                // Наступний відкритий і ще не пройдений рівень (закриті планети пропускаємо)
+                                AbstractGameScreen.level = game.levelUtil.nextLevelAfter(result.level)
                                 game.navigationManager.navigate(AbstractGameScreen::class.java.name)
                             }
                         }

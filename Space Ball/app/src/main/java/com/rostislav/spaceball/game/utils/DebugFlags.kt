@@ -18,18 +18,31 @@ object DebugFlags {
     var skinOverride: BallSkin? = null
         private set
 
+    /** `--ez locks true`: у debug показувати справжні замки рівнів (інакше все відкрито). */
+    var locks = false
+        private set
+
+    /**
+     * `--es progress "v2:333.3..."`: підмінити прогрес рівнів у пам'яті (не зберігається) —
+     * щоб перевіряти правила відкриття, не стираючи дані гри на телефоні.
+     */
+    var progress: String? = null
+        private set
+
     /** Викликати на самому початку MainActivity.onCreate. */
     fun init(activity: Activity) {
         if (!BuildConfig.DEBUG) return
         val intent = activity.intent ?: return
         shots = intent.getBooleanExtra("shots", false)
+        locks = intent.getBooleanExtra("locks", false)
+        progress = intent.getStringExtra("progress")
         skinOverride = intent.getStringExtra("skin")?.let { name ->
             BallSkin.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
         }
     }
 
     /** Усі рівні відкриті — щоб тестувати далекі планети без проходження. */
-    val unlockAllLevels get() = BuildConfig.DEBUG && !shots
+    val unlockAllLevels get() = BuildConfig.DEBUG && !shots && !locks
 
     /**
      * Одразу відкрити рівень, переданий у intent:

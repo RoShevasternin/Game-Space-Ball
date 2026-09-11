@@ -23,6 +23,7 @@ import com.rostislav.spaceball.game.utils.actor.animShow
 import com.rostislav.spaceball.game.utils.actor.setOnClickListener
 import com.rostislav.spaceball.game.utils.advanced.AdvancedScreen
 import com.rostislav.spaceball.game.utils.advanced.AdvancedStage
+import com.rostislav.spaceball.game.utils.dataStore.LevelUtil
 import com.rostislav.spaceball.game.utils.font.FontParameter
 import com.rostislav.spaceball.game.utils.level.LevelGenerator
 import com.rostislav.spaceball.game.utils.level.Planet
@@ -124,7 +125,7 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
 
     override fun show() {
         stageUI.root.animHide()
-        setBackBackground(game.assetsLoaderUtil.backgrounds[Planet.of(game.levelUtil.maxUnlocked).theme].region)
+        setBackBackground(game.assetsLoaderUtil.backgrounds[Planet.of(game.levelUtil.currentLevel).theme].region)
         animateBackground()
         super.show()
         stageUI.root.animShow(TIME_ANIM_ALPHA)
@@ -332,7 +333,7 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
         knownRevision = revision
 
         currentCell?.glow?.isVisible = false
-        currentCell = cells.getOrNull(game.levelUtil.maxUnlocked)
+        currentCell = cells.getOrNull(game.levelUtil.currentLevel)
         // Прогрес міг довантажитись уже під час автоскролу — перецілюємось
         if (introTime >= 0f) introTarget = offsetFor(focusLevel())
 
@@ -351,13 +352,22 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
             ))) else cell.planet.setScale(1f)
         }
         headers.onEach { h ->
-            val unlocked = game.levelUtil.isUnlocked(h.planet.firstLevel)
+            val unlocked = game.levelUtil.isPlanetUnlocked(h.planet)
             val stars = game.levelUtil.planetStars(h.planet)
             h.stars.setText("$stars / ${Planet.LEVELS_PER_PLANET * 3}")
             h.planet_.color.set(if (unlocked) colorOpen else colorLocked)
             h.title.color.a = if (unlocked) 1f else 0.6f
-            h.sub.color.a   = if (unlocked) 1f else 0.6f
             h.panel.glow    = if (unlocked) 0.55f else 0.15f
+            if (unlocked) {
+                h.sub.setText(h.planet.subtitle)
+                h.sub.color.set(h.planet.accent)
+            } else {
+                // Що треба зробити, щоб відкрити планету
+                val prev = Planet.entries[h.planet.ordinal - 1]
+                val done = game.levelUtil.planetCompleted(prev).coerceAtMost(LevelUtil.PLANET_UNLOCK)
+                h.sub.setText("COMPLETE $done/${LevelUtil.PLANET_UNLOCK} ${prev.title} LEVELS")
+                h.sub.color.set(StarRating.GOLD)
+            }
         }
     }
 
@@ -375,7 +385,7 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
 
     /** Рівень, на який націлюється список: останній зіграний за цей запуск або поточний. */
     private fun focusLevel(): Int =
-        if (AbstractGameScreen.hasPlayed) AbstractGameScreen.level else game.levelUtil.maxUnlocked
+        if (AbstractGameScreen.hasPlayed) AbstractGameScreen.level else game.levelUtil.currentLevel
 
     /** Зсув, за якого клітинка рівня [index] опиняється в центрі видимої зони. */
     private fun offsetFor(index: Int): Float {
