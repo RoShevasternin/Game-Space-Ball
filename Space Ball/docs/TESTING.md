@@ -27,7 +27,8 @@ adb exec-out screencap -p > shot.png && sips -Z 800 shot.png --out shot_s.png
 
 ## Debug-прапорці (`DebugFlags`, тільки debug-збірка)
 
-- Усі рівні відкриті в списку.
+- Реклама — тестові блоки Google (`app/src/debug/res/values/strings_ads.xml`); замки рівнів —
+  як у release (відкрити все — `--ez unlock true`).
 - `--ei level N` — одразу відкрити рівень N (0-based) після лоадера.
 - `--ez win true` / `--ez die true` — автоперемога/смерть через 2 с (екран перемоги, оверлей Continue).
 - `--ez tut true` — примусово показати туторіал.
@@ -35,7 +36,8 @@ adb exec-out screencap -p > shot.png && sips -Z 800 shot.png --out shot_s.png
   `D` високий, `L`/`R` вбік; число — секунди від старту рівня (+1.5 с на інтро-банер).
   Кожне натискання пише в лог `play D@3.0 ball=(x, y) grounded=… air=…`.
   Це єдиний надійний спосіб тестувати фізику: `adb shell input tap` має затримку 0.4–1 с.
-- `--ez locks true` — показати справжні замки рівнів (у debug за замовчуванням усе відкрито).
+- `--ez unlock true` — відкрити всі рівні. Без нього debug (зокрема Run з Android Studio)
+  має ті самі замки, що й release.
 - `--es progress "v2:3333333333....."` — підмінити прогрес рівнів у пам'яті (символ на рівень:
   `.` не пройдено, `0..3` зірки; не зберігається). Разом із `locks` — перевірка правил відкриття.
 - `--ef freeze 1.2` — через N с (та сама шкала, що й `play`) зупинити фізику й частинки:

@@ -18,8 +18,11 @@ object DebugFlags {
     var skinOverride: BallSkin? = null
         private set
 
-    /** `--ez locks true`: у debug показувати справжні замки рівнів (інакше все відкрито). */
-    var locks = false
+    /**
+     * `--ez unlock true`: відкрити всі рівні — для тестування далеких планет через adb.
+     * Без прапорця debug-збірка (зокрема Run з Android Studio) поводиться як release.
+     */
+    var unlock = false
         private set
 
     /**
@@ -34,15 +37,15 @@ object DebugFlags {
         if (!BuildConfig.DEBUG) return
         val intent = activity.intent ?: return
         shots = intent.getBooleanExtra("shots", false)
-        locks = intent.getBooleanExtra("locks", false)
+        unlock = intent.getBooleanExtra("unlock", false)
         progress = intent.getStringExtra("progress")
         skinOverride = intent.getStringExtra("skin")?.let { name ->
             BallSkin.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
         }
     }
 
-    /** Усі рівні відкриті — щоб тестувати далекі планети без проходження. */
-    val unlockAllLevels get() = BuildConfig.DEBUG && !shots && !locks
+    /** Усі рівні відкриті — лише з явним `--ez unlock true`. */
+    val unlockAllLevels get() = BuildConfig.DEBUG && unlock && !shots
 
     /**
      * Одразу відкрити рівень, переданий у intent:
