@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.Context
 import com.google.android.gms.games.PlayGamesSdk
 import com.google.firebase.messaging.FirebaseMessaging
-import com.rostislav.spaceball.ads.AppOpenAdManager
-import com.rostislav.spaceball.ads.MobileAdsInitializer
+import com.rostislav.spaceball.services.ads.AppOpenAdManager
+import com.rostislav.spaceball.services.ads.MobileAdsInitializer
 import com.rostislav.spaceball.util.log
 
 

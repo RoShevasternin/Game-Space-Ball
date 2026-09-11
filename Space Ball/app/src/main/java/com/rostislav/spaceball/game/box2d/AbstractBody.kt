@@ -76,6 +76,9 @@ abstract class AbstractBody: Destroyable {
 
             if (isDestroyActor) {
                 actor?.dispose()
+                // dispose лише чистить дітей; актори, що малюють себе самі (ShapeDrawer),
+                // без remove() лишалися б на сцені «привидами»
+                actor?.remove()
                 actor = null
             }
 

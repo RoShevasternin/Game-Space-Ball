@@ -5,7 +5,10 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.Interpolation
+import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.viewport.FillViewport
@@ -97,6 +100,16 @@ abstract class AdvancedScreen(
 
     fun setBackBackground(region: TextureRegion) {
         backBackgroundImage.drawable = TextureRegionDrawable(region)
+    }
+
+    /** Повільне «дихання» фону (ефект Кена Бернса) — для меню та списків. */
+    fun animateBackground(period: Float = 14f) {
+        backBackgroundImage.clearActions()
+        backBackgroundImage.addAction(Actions.forever(Actions.sequence(
+            Actions.run { backBackgroundImage.setOrigin(Align.center) },
+            Actions.scaleTo(1.07f, 1.07f, period, Interpolation.sine),
+            Actions.scaleTo(1f, 1f, period, Interpolation.sine),
+        )))
     }
 
     fun setUIBackground(texture: TextureRegion) {

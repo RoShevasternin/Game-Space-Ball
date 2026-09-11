@@ -33,8 +33,9 @@ class SpriteUtil {
           val bList = List(4) { getRegion("b${it.inc()}") }
           val pList = List(4) { getRegion("p${it.inc()}") }
 
-          val btns       = SpriteManager.EnumTexture.btns.data.texture
-          val gpg_signin = SpriteManager.EnumTexture.gpg_signin.data.texture
+          val ballList = List(4) { getRegion("ball${it.inc()}") }
+
+          val btns    = SpriteManager.EnumTexture.btns.data.texture
           val you_win = SpriteManager.EnumTexture.you_win.data.texture
      }
 

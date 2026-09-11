@@ -41,6 +41,7 @@ class NavigationManager(val game: GdxGame) {
         SpaceLevelsScreen   ::class.java.name -> SpaceLevelsScreen(game)
         AbstractGameScreen  ::class.java.name -> AbstractGameScreen(game)
         SpaceWinScreen      ::class.java.name -> SpaceWinScreen(game)
+        SpaceShopScreen     ::class.java.name -> SpaceShopScreen(game)
 
         else -> SpaceLevelsScreen(game)
     }

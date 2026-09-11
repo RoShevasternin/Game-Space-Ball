@@ -1,9 +1,23 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlinx-serialization")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
+
+// Ключі TikTok лежать у gradle.properties (комітиться — проєкт відновлюється з git без
+// ручних кроків). local.properties, якщо там є ці ключі, має пріоритет — для локальних підмін.
+val localProps = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun secret(key: String): String =
+    localProps.getProperty(key) ?: providers.gradleProperty(key).orNull ?: ""
+
+val tiktokAppId     = secret("tiktok.app.id")
+val tiktokAppSecret = secret("tiktok.app.secret")
 
 android {
     namespace = "com.rostislav.spaceball"
@@ -13,10 +27,13 @@ android {
         applicationId = "com.rostislav.spaceball"
         minSdk = 24
         targetSdk = 37
-        versionCode = 20
-        versionName = "20.0.0"
+        versionCode = 21
+        versionName = "21.3.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "TIKTOK_APP_ID", "\"$tiktokAppId\"")
+        buildConfigField("String", "TIKTOK_APP_SECRET", "\"$tiktokAppSecret\"")
     }
 
     buildTypes {
@@ -68,7 +85,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.8.0")
     implementation("androidx.activity:activity-ktx:1.13.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.2")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.10.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.10.1")
     implementation("androidx.datastore:datastore-preferences:1.2.1")
 
     val gdxVersion = "1.14.2"
@@ -97,10 +114,19 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-process:2.11.0")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-messaging")
+
+    // TikTok
+    implementation("com.github.tiktok:tiktok-business-android-sdk:1.6.1")
+
+    // Billing
+    implementation("com.android.billingclient:billing-ktx:9.1.0")
+
+    // Install Referrer
+    implementation("com.android.installreferrer:installreferrer:2.2")
 
     // AdMob
     implementation("com.google.android.gms:play-services-ads:25.4.0")
@@ -127,5 +153,13 @@ tasks.register("copyAndroidNatives") {
 tasks.configureEach {
     if ("package" in name) {
         dependsOn("copyAndroidNatives")
+    }
+    // Release без ключів TikTok зібрався б мовчки і не рахував би встановлення з реклами
+    if (name == "preReleaseBuild") {
+        doFirst {
+            if (tiktokAppId.isBlank() || tiktokAppSecret.isBlank()) {
+                throw GradleException("У gradle.properties немає tiktok.app.id / tiktok.app.secret — див. docs/MONETIZATION.md")
+            }
+        }
     }
 }

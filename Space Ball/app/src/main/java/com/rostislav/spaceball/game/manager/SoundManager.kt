@@ -21,6 +21,23 @@ class SoundManager(var assetManager: AssetManager) {
         CLICK(SoundData("sound/click.mp3")),
         DOWN (SoundData("sound/down.mp3")),
         FAIL (SoundData("sound/fail.mp3")),
+
+        // Згенеровані процедурно (scratchpad/synth.py)
+        JUMP      (SoundData("sound/jump.wav")),
+        JUMP2     (SoundData("sound/jump2.wav")),
+        TRAMPOLINE(SoundData("sound/trampoline.wav")),
+        PORTAL    (SoundData("sound/portal.wav")),
+        CRUMBLE   (SoundData("sound/crumble.wav")),
+        LASER     (SoundData("sound/laser.wav")),
+        WARP      (SoundData("sound/warp.wav")),
+        ASTEROID  (SoundData("sound/asteroid.wav")),
+        EXPLODE   (SoundData("sound/explode.wav")),
+        BLACKHOLE (SoundData("sound/blackhole.wav")),
+        PURCHASE  (SoundData("sound/purchase.wav")),
+        REVIVE    (SoundData("sound/revive.wav")),
+        SPARKLE   (SoundData("sound/sparkle.wav")),
+        LOCKED    (SoundData("sound/locked.wav")),
+        TICK      (SoundData("sound/tick.wav")),
     }
 
     data class SoundData(

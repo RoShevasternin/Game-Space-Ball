@@ -11,8 +11,9 @@ import androidx.core.content.ContextCompat
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication
 import com.google.android.gms.games.GamesSignInClient
 import com.google.android.gms.games.PlayGames
-import com.rostislav.spaceball.ads.AdManager
+import com.rostislav.spaceball.services.ads.AdManager
 import com.rostislav.spaceball.databinding.ActivityMainBinding
+import com.rostislav.spaceball.services.tiktok.TikTokManager
 import com.rostislav.spaceball.util.Lottie
 import com.rostislav.spaceball.util.log
 import kotlinx.coroutines.*
@@ -84,6 +85,8 @@ class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         lottie = Lottie(binding)
+
+        initTikTok()
     }
 
     // ---------------------------------------------------------------------------------------
@@ -96,6 +99,17 @@ class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
      */
     fun showInterstitial(onDone: () -> Unit) {
         adManager.showInterstitial(onDone)
+    }
+
+    /** Чи готова rewarded-реклама (безпечно з GL-потоку). */
+    fun isRewardedReady(): Boolean = ::adManager.isInitialized && adManager.isRewardedReady()
+
+    /**
+     * Rewarded-реклама: [onReward] — нагорода заслужена, [onDone] — реклама закрита (завжди).
+     * Обидва колбеки приходять на main-потоці — у грі загортати в runGDX.
+     */
+    fun showRewarded(onReward: () -> Unit, onDone: () -> Unit) {
+        adManager.showRewarded(onReward, onDone)
     }
 
     // ---------------------------------------------------------------------------------------
@@ -178,6 +192,14 @@ class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
     override fun onActivityReenter(resultCode: Int, data: Intent?) {
         super.onActivityReenter(resultCode, data)
         log("Hello: $resultCode")
+    }
+
+    // ------------------------------------------------------------------------
+    // TikTok
+    // ------------------------------------------------------------------------
+    private fun initTikTok() {
+        // Ключі — у gradle.properties → BuildConfig (див. TikTokManager)
+        TikTokManager.initialize(application)
     }
 
     // ------------------------------------------------------------------------

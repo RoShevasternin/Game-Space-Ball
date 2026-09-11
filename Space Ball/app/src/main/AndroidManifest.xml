@@ -30,7 +30,7 @@
                    android:value="@string/game_services_project_id"/>
 
         <!-- Test: ca-app-pub-3940256099942544~3347511713 -->
-        <!-- Original: ca-app-pub-4052300465234748~7593537688 -->
+        <!-- Справжній App ID потрібен і для debug: тестові ad unit ID з ним теж працюють -->
         <meta-data
                 android:name="com.google.android.gms.ads.APPLICATION_ID"
                 android:value="ca-app-pub-4052300465234748~7593537688"/>

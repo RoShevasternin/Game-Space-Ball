@@ -10,7 +10,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.viewport.Viewport
+import com.rostislav.spaceball.game.GdxGame
 
+val gdxGame: GdxGame get() = Gdx.app.applicationListener as GdxGame
 
 val Texture.region: TextureRegion get() = TextureRegion(this)
 val Float.toMS: Long get() = (this * 1000).toLong()

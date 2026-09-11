@@ -51,7 +51,6 @@ class SpriteManager(var assetManager: AssetManager) {
         _4(TextureData("textures/4.png")),
 
         btns(TextureData("textures/btns.png")),
-        gpg_signin(TextureData("textures/gpg_signin.png")),
         you_win(TextureData("textures/you_win.png")),
     }
 

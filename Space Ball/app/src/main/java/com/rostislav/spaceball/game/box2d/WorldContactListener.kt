@@ -48,9 +48,10 @@ class WorldContactListener: ContactListener {
 
         soundUtil = bodyA.screenBox2d.game.soundUtil
 
-        if (tmpArray.all { it.fixtureDef.isSensor.not() }) {
+        // Звук приземлення — лише для м'яча об платформу/стіну (астероїди звучать самі)
+        if (tmpArray.all { it.fixtureDef.isSensor.not() } && tmpArray.none { it.id == BodyId.ASTEROID }) {
             when {
-                tmpArray.any { it.bodyDef.type == BodyDef.BodyType.StaticBody }
+                tmpArray.any { it.bodyDef.type != BodyDef.BodyType.DynamicBody }
                 -> if (currentTimeMinus(timeContactStatic) >= 125) {
                     soundUtil.apply { play(DOWN, 1.5f) }
                     timeContactStatic = System.currentTimeMillis()

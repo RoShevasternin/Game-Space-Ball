@@ -1,4 +1,4 @@
-package com.rostislav.spaceball.ads
+package com.rostislav.spaceball.services.ads
 
 import android.app.Activity
 import android.app.Application

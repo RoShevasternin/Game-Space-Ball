@@ -1,4 +1,4 @@
-package com.rostislav.spaceball.ads
+package com.rostislav.spaceball.services.ads
 
 import android.os.Handler
 import android.os.Looper

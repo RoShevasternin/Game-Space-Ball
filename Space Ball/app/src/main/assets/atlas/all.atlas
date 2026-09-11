@@ -1,60 +1,60 @@
 all.png
-size: 986, 1510
+size: 1954, 1469
 format: RGBA8888
-filter: Linear,Linear
+filter: Linear, Linear
 repeat: none
 a1
   rotate: false
-  xy: 2, 2
+  xy: 242, 2
   size: 70, 67
   orig: 70, 67
   offset: 0, 0
   index: -1
 a2
   rotate: false
-  xy: 74, 2
+  xy: 314, 2
   size: 70, 67
   orig: 70, 67
   offset: 0, 0
   index: -1
 a3
   rotate: false
-  xy: 146, 2
+  xy: 386, 2
   size: 70, 67
   orig: 70, 67
   offset: 0, 0
   index: -1
 a4
   rotate: false
-  xy: 218, 2
+  xy: 458, 2
   size: 70, 67
   orig: 70, 67
   offset: 0, 0
   index: -1
 b1
   rotate: false
-  xy: 290, 2
+  xy: 2, 2
   size: 58, 70
   orig: 58, 70
   offset: 0, 0
   index: -1
 b2
   rotate: false
-  xy: 350, 2
+  xy: 62, 2
   size: 58, 70
   orig: 58, 70
   offset: 0, 0
   index: -1
 b3
   rotate: false
-  xy: 410, 2
+  xy: 122, 2
   size: 58, 70
   orig: 58, 70
   offset: 0, 0
   index: -1
 b4
   rotate: false
-  xy: 470, 2
+  xy: 182, 2
   size: 58, 70
   orig: 58, 70
   offset: 0, 0
@@ -73,6 +73,34 @@ ball
   orig: 119, 119
   offset: 0, 0
   index: -1
+ball1
+  rotate: false
+  xy: 160, 169
+  size: 166, 166
+  orig: 166, 166
+  offset: 0, 0
+  index: -1
+ball2
+  rotate: false
+  xy: 328, 169
+  size: 166, 166
+  orig: 166, 166
+  offset: 0, 0
+  index: -1
+ball3
+  rotate: false
+  xy: 496, 169
+  size: 166, 166
+  orig: 166, 166
+  offset: 0, 0
+  index: -1
+ball4
+  rotate: false
+  xy: 664, 169
+  size: 166, 166
+  orig: 166, 166
+  offset: 0, 0
+  index: -1
 left
   rotate: false
   xy: 772, 2
@@ -82,84 +110,84 @@ left
   index: -1
 left_p
   rotate: false
-  xy: 2, 169
+  xy: 930, 2
   size: 156, 165
   orig: 156, 165
   offset: 0, 0
   index: -1
 p1
   rotate: false
-  xy: 160, 169
-  size: 390, 390
-  orig: 390, 390
+  xy: 1304, 169
+  size: 648, 648
+  orig: 648, 648
   offset: 0, 0
   index: -1
 p2
   rotate: false
-  xy: 552, 169
-  size: 305, 305
-  orig: 305, 305
+  xy: 2, 819
+  size: 648, 648
+  orig: 648, 648
   offset: 0, 0
   index: -1
 p3
   rotate: false
-  xy: 2, 561
-  size: 453, 453
-  orig: 453, 453
+  xy: 652, 819
+  size: 648, 648
+  orig: 648, 648
   offset: 0, 0
   index: -1
 p4
   rotate: false
-  xy: 457, 561
-  size: 527, 527
-  orig: 527, 527
+  xy: 1302, 819
+  size: 648, 648
+  orig: 648, 648
   offset: 0, 0
   index: -1
 right
   rotate: false
-  xy: 2, 1090
+  xy: 1088, 2
   size: 156, 165
   orig: 156, 165
   offset: 0, 0
   index: -1
 right_p
   rotate: false
-  xy: 160, 1090
+  xy: 1246, 2
   size: 156, 165
   orig: 156, 165
   offset: 0, 0
   index: -1
 stars
   rotate: false
-  xy: 318, 1090
+  xy: 832, 169
   size: 470, 251
   orig: 470, 251
   offset: 0, 0
   index: -1
 up
   rotate: false
-  xy: 790, 1090
+  xy: 1404, 2
   size: 156, 165
   orig: 156, 165
   offset: 0, 0
   index: -1
 up_p
   rotate: false
-  xy: 2, 1343
+  xy: 1562, 2
   size: 156, 165
   orig: 156, 165
   offset: 0, 0
   index: -1
 upup_d
   rotate: false
-  xy: 160, 1343
+  xy: 1720, 2
   size: 156, 165
   orig: 156, 165
   offset: 0, 0
   index: -1
 upup_p
   rotate: false
-  xy: 318, 1343
+  xy: 2, 169
   size: 156, 165
   orig: 156, 165
   offset: 0, 0

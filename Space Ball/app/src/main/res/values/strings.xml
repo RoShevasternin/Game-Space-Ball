@@ -10,4 +10,6 @@
     <string name="ad_interstitial_id">ca-app-pub-4052300465234748/7608637050</string>
     <!-- Test App Open: ca-app-pub-3940256099942544/9257395921 -->
     <string name="ad_app_open_id">ca-app-pub-4052300465234748/4736015990</string>
+    <!-- Test Rewarded: ca-app-pub-3940256099942544/5224354917 -->
+    <string name="ad_rewarded_id">ca-app-pub-4052300465234748/1797660720</string>
 </resources>

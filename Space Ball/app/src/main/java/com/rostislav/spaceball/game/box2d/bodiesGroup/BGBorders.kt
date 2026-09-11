@@ -30,10 +30,14 @@ class BGBorders(override val screenBox2d: AdvancedBox2dScreen) : AbstractBodyGro
     // ---------------------------------------------------
 
     private fun initB_Borders() {
+        // Низ — «земля» (від неї можна стрибати), решта — стіни
+        bDown.id = BodyId.BORDERS
+        arrayOf(bTop, bLeft, bRight).onEach { it.id = BodyId.WALL }
+
         arrayOf(bTop, bDown, bLeft, bRight).onEach { it.apply {
-            id = BodyId.BORDERS
             collisionList.addAll(arrayOf(
-                BodyId.BALL
+                BodyId.BALL,
+                BodyId.ASTEROID,
             ))
         } }
     }

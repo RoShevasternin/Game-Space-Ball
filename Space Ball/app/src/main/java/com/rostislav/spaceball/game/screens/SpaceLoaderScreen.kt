@@ -1,10 +1,11 @@
 package com.rostislav.spaceball.game.screens
 
-import com.rostislav.spaceball.ads.AppOpenGate
+import com.rostislav.spaceball.services.ads.AppOpenGate
 import com.rostislav.spaceball.game.GdxGame
 import com.rostislav.spaceball.game.manager.MusicManager
 import com.rostislav.spaceball.game.manager.SoundManager
 import com.rostislav.spaceball.game.manager.SpriteManager
+import com.rostislav.spaceball.game.utils.DebugFlags
 import com.rostislav.spaceball.game.utils.TIME_ANIM_ALPHA
 import com.rostislav.spaceball.game.utils.actor.animHide
 import com.rostislav.spaceball.game.utils.advanced.AdvancedScreen
@@ -111,7 +112,15 @@ class SpaceLoaderScreen(override val game: GdxGame) : AdvancedScreen() {
 
         stageUI.root.animHide(TIME_ANIM_ALPHA) {
             game.activity.lottie.hideLoader()
-            game.navigationManager.navigate(SpaceMenuScreen::class.java.name)
+
+            val debugLevel = DebugFlags.startLevel(game.activity)
+            if (debugLevel >= 0) {
+                AbstractGameScreen.level = debugLevel
+                AbstractGameScreen.isDaily = false
+                game.navigationManager.navigate(AbstractGameScreen::class.java.name, SpaceMenuScreen::class.java.name)
+            } else {
+                game.navigationManager.navigate(SpaceMenuScreen::class.java.name)
+            }
         }
     }
 
