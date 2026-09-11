@@ -14,6 +14,7 @@ import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.appopen.AppOpenAd
 import com.rostislav.spaceball.R
+import com.rostislav.spaceball.game.utils.DebugFlags
 import com.rostislav.spaceball.util.log
 import java.util.Date
 
@@ -159,6 +160,10 @@ class AppOpenAdManager(
     }
 
     private fun showAdIfAvailable(activity: Activity) {
+        if (DebugFlags.shots) {
+            AppOpenGate.resolve("screenshot mode")
+            return
+        }
         if (FullScreenAdState.isShowingAd) {
             log("AppOpenAd: another full screen ad is showing — skip")
             return

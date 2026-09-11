@@ -20,6 +20,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.rostislav.spaceball.R
+import com.rostislav.spaceball.game.utils.DebugFlags
 import com.rostislav.spaceball.util.log
 
 /**
@@ -61,7 +62,8 @@ class AdManager(
     fun initialize() {
         MobileAdsInitializer.onReady {
             if (activity.isDestroyed || activity.isFinishing) return@onReady
-            addBannerAd()
+            // Режим зйомки скріншотів — без банера
+            if (!DebugFlags.shots) addBannerAd()
             loadInterstitial()
             loadRewarded()
         }

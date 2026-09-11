@@ -1,6 +1,7 @@
 package com.rostislav.spaceball.game.utils.dataStore
 
 import com.rostislav.spaceball.game.manager.GameDataStoreManager
+import com.rostislav.spaceball.game.utils.DebugFlags
 import com.rostislav.spaceball.util.log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -11,8 +12,9 @@ import kotlinx.coroutines.launch
  */
 class StarUtil(val coroutine: CoroutineScope) {
 
-    var stars = 0L
-        private set
+    private var value = 0L
+
+    val stars get() = if (DebugFlags.shots) DebugFlags.SHOTS_STARS else value
 
     /** Зростає при кожній зміні — щоб екрани помічали оновлення. */
     var revision = 0
@@ -20,14 +22,15 @@ class StarUtil(val coroutine: CoroutineScope) {
 
     init {
         coroutine.launch {
-            stars = GameDataStoreManager.Stars.get() ?: 0
+            value = GameDataStoreManager.Stars.get() ?: 0
             revision++
-            log("Store Stars = $stars")
+            log("Store Stars = $value")
         }
     }
 
     fun update(result: Long) {
-        stars = result
+        if (DebugFlags.shots) return
+        value = result
         revision++
         coroutine.launch {
             GameDataStoreManager.Stars.update { result }

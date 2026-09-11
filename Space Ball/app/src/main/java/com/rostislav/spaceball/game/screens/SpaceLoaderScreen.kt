@@ -113,13 +113,20 @@ class SpaceLoaderScreen(override val game: GdxGame) : AdvancedScreen() {
         stageUI.root.animHide(TIME_ANIM_ALPHA) {
             game.activity.lottie.hideLoader()
 
-            val debugLevel = DebugFlags.startLevel(game.activity)
-            if (debugLevel >= 0) {
-                AbstractGameScreen.level = debugLevel
-                AbstractGameScreen.isDaily = false
-                game.navigationManager.navigate(AbstractGameScreen::class.java.name, SpaceMenuScreen::class.java.name)
-            } else {
-                game.navigationManager.navigate(SpaceMenuScreen::class.java.name)
+            val debugLevel  = DebugFlags.startLevel(game.activity)
+            val debugScreen = when (DebugFlags.startScreen(game.activity)) {
+                "shop"   -> SpaceShopScreen::class.java.name
+                "levels" -> SpaceLevelsScreen::class.java.name
+                else     -> null
+            }
+            when {
+                debugLevel >= 0 -> {
+                    AbstractGameScreen.level = debugLevel
+                    AbstractGameScreen.isDaily = false
+                    game.navigationManager.navigate(AbstractGameScreen::class.java.name, SpaceMenuScreen::class.java.name)
+                }
+                debugScreen != null -> game.navigationManager.navigate(debugScreen, SpaceMenuScreen::class.java.name)
+                else -> game.navigationManager.navigate(SpaceMenuScreen::class.java.name)
             }
         }
     }

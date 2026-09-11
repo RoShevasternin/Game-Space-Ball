@@ -17,9 +17,10 @@ import kotlinx.coroutines.launch
  */
 class LevelUtil(private val coroutine: CoroutineScope) {
 
+    private var storedMax = 0
+
     /** Індекс останнього відкритого рівня. 0 означає, що доступний лише рівень №1. */
-    var maxUnlocked = 0
-        private set
+    val maxUnlocked get() = if (DebugFlags.shots) DebugFlags.SHOTS_CURRENT_LEVEL else storedMax
 
     /** Найкращий результат по рівнях, 0..3. */
     private val ratings = IntArray(LevelGenerator.LEVEL_COUNT)
@@ -35,13 +36,14 @@ class LevelUtil(private val coroutine: CoroutineScope) {
                 if (i < ratings.size) ratings[i] = (c - '0').coerceIn(0, 3)
             }
             set(stored)
-            log("Store MaxLevel = $maxUnlocked, stars = ${ratings.sum()}")
+            log("Store MaxLevel = $storedMax, stars = ${ratings.sum()}")
         }
     }
 
     fun isUnlocked(index: Int): Boolean = DebugFlags.unlockAllLevels || index <= maxUnlocked
 
-    fun rating(index: Int): Int = ratings.getOrElse(index) { 0 }
+    fun rating(index: Int): Int =
+        if (DebugFlags.shots) DebugFlags.shotsRating(index) else ratings.getOrElse(index) { 0 }
 
     /** Скільки зірок зібрано на планеті (з максимуму 45). */
     fun planetStars(planet: Planet): Int = (planet.firstLevel..planet.lastLevel).sumOf { rating(it) }
@@ -49,15 +51,15 @@ class LevelUtil(private val coroutine: CoroutineScope) {
     /** Скільки рівнів планети пройдено. */
     fun planetCompleted(planet: Planet): Int = (planet.firstLevel..planet.lastLevel).count { rating(it) > 0 || it < maxUnlocked }
 
-    val totalRatingStars get() = ratings.sum()
+    val totalRatingStars get() = (0 until LevelGenerator.LEVEL_COUNT).sumOf { rating(it) }
 
     /**
      * Викликати після перемоги на рівні [completedIndex] із [stars] зібраними зірками.
      * Відкриває наступний рівень і запам'ятовує найкращий результат.
      */
     fun complete(completedIndex: Int, stars: Int) {
+        if (DebugFlags.shots) return
         val safe = completedIndex.coerceIn(0, LevelGenerator.LEVEL_COUNT - 1)
-        // Пройдений рівень без зірок теж рахуємо як пройдений — мінімум 1 (для списку рівнів)
         val newRating = stars.coerceIn(0, 3)
         if (newRating > ratings[safe]) {
             ratings[safe] = newRating
@@ -68,20 +70,20 @@ class LevelUtil(private val coroutine: CoroutineScope) {
             }
         }
 
-        if (safe < maxUnlocked) return
+        if (safe < storedMax) return
 
         val next = (safe + 1).coerceAtMost(LevelGenerator.LEVEL_COUNT - 1)
-        if (next == maxUnlocked) return
+        if (next == storedMax) return
 
         set(next)
         coroutine.launch {
-            GameDataStoreManager.MaxLevel.update { maxUnlocked }
-            log("Store MaxLevel updated = $maxUnlocked")
+            GameDataStoreManager.MaxLevel.update { storedMax }
+            log("Store MaxLevel updated = $storedMax")
         }
     }
 
     private fun set(value: Int) {
-        maxUnlocked = value.coerceIn(0, LevelGenerator.LEVEL_COUNT - 1)
+        storedMax = value.coerceIn(0, LevelGenerator.LEVEL_COUNT - 1)
         revision++
     }
 }

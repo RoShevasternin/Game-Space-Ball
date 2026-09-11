@@ -141,7 +141,11 @@ class FxSystem(private val drawerUtil: ShapeDrawerUtil) {
     // Update / draw
     // ------------------------------------------------------------------------
 
+    /** Зупинити частинки на місці (кадр для скріншота). */
+    var frozen = false
+
     fun update(delta: Float) {
+        if (frozen) return
         for (p in particles) {
             if (p.life <= 0f) continue
             p.life -= delta

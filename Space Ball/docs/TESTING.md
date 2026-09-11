@@ -35,6 +35,26 @@ adb exec-out screencap -p > shot.png && sips -Z 800 shot.png --out shot_s.png
   `D` високий, `L`/`R` вбік; число — секунди від старту рівня (+1.5 с на інтро-банер).
   Кожне натискання пише в лог `play D@3.0 ball=(x, y) grounded=… air=…`.
   Це єдиний надійний спосіб тестувати фізику: `adb shell input tap` має затримку 0.4–1 с.
+- `--ef freeze 1.2` — через N с (та сама шкала, що й `play`) зупинити фізику й частинки:
+  кадр застигає для скріншота.
+- `--ez shots true` — **режим зйомки для маркету**: без банера й App Open реклами, без
+  туторіалу, з фейковим прогресом (пройдено 22 рівні, 186 зірок, куплені скіни); нічого
+  не зберігає в DataStore. Разом із ним: `--es skin NEBULA` (підмінити скін),
+  `--es screen shop|levels` (одразу відкрити екран).
+
+## Скріншоти для Google Play
+
+Сирі кадри знімаються в режимі `shots` (див. вище), маркетингові картинки складає
+`tools/compose_store_shots.py` (Pillow): заголовок, «телефон» із неоновою рамкою на
+затемненому фоні планети → `store/NN_<name>.png` (1080×1920) і `store/feature_graphic.png`
+(1024×500). Список кадрів і заголовків — у `SHOTS` усередині скрипта.
+```bash
+python3 -m venv /tmp/venv && /tmp/venv/bin/pip install pillow
+/tmp/venv/bin/python tools/compose_store_shots.py          # читає store/raw/*.png
+```
+**Увага:** debug- і release-збірки ділять один DataStore на пристрої, тож автоперемоги
+(`--ez win`) під час тестів відкривають рівні «по-справжньому». Скинути прогрес:
+`adb shell pm clear com.rostislav.spaceball`.
 
 Приклад повного проходження туторіалу:
 ```bash

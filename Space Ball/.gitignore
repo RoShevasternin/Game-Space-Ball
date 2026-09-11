@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Сирі кадри з телефона для маркетингових скрінів (25 МБ, перезнімаються — див. docs/TESTING.md)
+/store/raw/

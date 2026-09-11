@@ -72,6 +72,8 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
         var level: Int = 0
         /** Щоденний рівень замість [level]. */
         var isDaily = false
+        /** Чи грали звичайний рівень за цей запуск — тоді список рівнів відкривається на [level]. */
+        var hasPlayed = false
         /** Результат останнього пройденого рівня — читає екран перемоги. */
         var lastResult: LevelResult? = null
 
@@ -165,6 +167,7 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
     private val ballCenter: Vector2 get() = bBall.body?.let { tmp.set(it.worldCenter).toUI } ?: tmp.set(safePos)
 
     override fun show() {
+        if (!isDaily) hasPlayed = true
         stageUI.root.animHide()
         setBackBackground(game.assetsLoaderUtil.backgrounds[theme].region)
         worldUtil.world.gravity = Vector2(0f, levelData.gravity)
@@ -196,7 +199,13 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
         addBack()
         addActor(tutorial.bubble)
 
-        if (DebugFlags.autoWin(game.activity)) addAction(Actions.delay(2f, Actions.run { win(bGate) }))
+        if (DebugFlags.autoWin(game.activity)) addAction(Actions.delay(2f, Actions.run {
+            if (DebugFlags.shots) starsCollected = 3
+            win(bGate)
+        }))
+        DebugFlags.freezeAt(game.activity).takeIf { it >= 0f }?.let { t ->
+            addAction(Actions.delay(1.5f + t, Actions.run { isPauseWorld = true; fx.frozen = true }))
+        }
         if (DebugFlags.autoDie(game.activity)) addAction(Actions.delay(2f, Actions.run { die(BodyId.TRI) }))
         DebugFlags.playScript(game.activity).forEach { (key, t) ->
             addAction(Actions.delay(1.5f + t, Actions.run {
@@ -911,6 +920,7 @@ class AbstractGameScreen(override val game: GdxGame): AdvancedBox2dScreen(WorldU
         private var pointerTime = 0f
 
         fun start() {
+            if (DebugFlags.shots) return
             if (enabled) {
                 if (level == 0) showStep(0) else showStep(10)
                 return

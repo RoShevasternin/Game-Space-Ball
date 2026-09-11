@@ -85,9 +85,23 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
     private val content = object : Group() {
         override fun act(delta: Float) {
             super.act(delta)
+            applyIntroScroll(delta)
             applyFling(delta)
             refreshLocksIfChanged()
             cullCells()
+        }
+
+        /**
+         * Список обрізається по видимій зоні — не наїжджає на верхню панель і низ екрана.
+         * clipBegin викликається до applyTransform, тож прямокутник — у координатах сцени.
+         */
+        override fun draw(batch: Batch, parentAlpha: Float) {
+            batch.flush()
+            if (clipBegin(0f, LIST_BOTTOM, 1080f, viewHeight)) {
+                super.draw(batch, parentAlpha)
+                batch.flush()
+                clipEnd()
+            }
         }
     }
 
@@ -95,6 +109,14 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
     private var velocity   = 0f
     private var isDragging = false
     private var time       = 0f
+
+    /**
+     * Вступний автоскрол: список відкривається на останніх рівнях (низ) і сам плавно
+     * їде до поточного — гравець за секунду бачить, скільки в грі рівнів.
+     */
+    private var introTime   = -1f
+    private var introFrom   = 0f
+    private var introTarget = 0f
 
     /** Прогрес вантажиться з DataStore асинхронно — стежимо, коли він приїде. */
     private var knownRevision = -1
@@ -227,6 +249,7 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
             private var lastY    = 0f
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
+                introTime  = -1f          // дотик перериває вступний автоскрол
                 startY     = y
                 lastY      = y
                 startOff   = offset
@@ -310,6 +333,8 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
 
         currentCell?.glow?.isVisible = false
         currentCell = cells.getOrNull(game.levelUtil.maxUnlocked)
+        // Прогрес міг довантажитись уже під час автоскролу — перецілюємось
+        if (introTime >= 0f) introTarget = offsetFor(focusLevel())
 
         cells.onEach { cell ->
             val unlocked = game.levelUtil.isUnlocked(cell.index)
@@ -348,12 +373,24 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
         )
     }
 
-    /** Стартова позиція списку — на рівні, до якого гравець дійшов. */
-    private fun scrollToCurrentLevel() {
-        val cell = cells.getOrNull(game.levelUtil.maxUnlocked) ?: return
+    /** Рівень, на який націлюється список: останній зіграний за цей запуск або поточний. */
+    private fun focusLevel(): Int =
+        if (AbstractGameScreen.hasPlayed) AbstractGameScreen.level else game.levelUtil.maxUnlocked
+
+    /** Зсув, за якого клітинка рівня [index] опиняється в центрі видимої зони. */
+    private fun offsetFor(index: Int): Float {
+        val cell = cells.getOrNull(index) ?: return maxOffset
         val center = (LIST_TOP + LIST_BOTTOM) / 2f
         // content.y + cell.y + CELL/2 == center
-        offset = (center - cell.y - CELL / 2f - LIST_TOP + contentHeight).coerceIn(0f, maxOffset)
+        return (center - cell.y - CELL / 2f - LIST_TOP + contentHeight).coerceIn(0f, maxOffset)
+    }
+
+    /** Старт: показуємо низ списку (останні рівні) і запускаємо автоскрол до потрібного. */
+    private fun scrollToCurrentLevel() {
+        introTarget = offsetFor(focusLevel())
+        introFrom   = maxOffset
+        offset      = introFrom
+        introTime   = 0f
         applyOffset()
     }
 
@@ -362,6 +399,21 @@ class SpaceLevelsScreen(override val game: GdxGame): AdvancedScreen() {
     // ------------------------------------------------------------------------
     private fun applyOffset() {
         content.y = LIST_TOP - contentHeight + offset
+    }
+
+    private fun applyIntroScroll(delta: Float) {
+        if (introTime < 0f || isDragging) return
+        introTime += delta
+
+        // Пауза на fade-in екрана, тривалість залежить від відстані (≈1.1–1.9 с)
+        val start    = 0.45f
+        val distance = abs(introTarget - introFrom)
+        val duration = 1.1f + 0.8f * (distance / maxOffset.coerceAtLeast(1f))
+        val t = ((introTime - start) / duration).coerceIn(0f, 1f)
+
+        offset = MathUtils.lerp(introFrom, introTarget, Interpolation.pow3Out.apply(t))
+        applyOffset()
+        if (t >= 1f) introTime = -1f
     }
 
     private fun applyFling(delta: Float) {

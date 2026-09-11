@@ -11,7 +11,9 @@ import androidx.core.content.ContextCompat
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication
 import com.google.android.gms.games.GamesSignInClient
 import com.google.android.gms.games.PlayGames
+import com.rostislav.spaceball.game.utils.DebugFlags
 import com.rostislav.spaceball.services.ads.AdManager
+import com.rostislav.spaceball.services.ads.AppOpenGate
 import com.rostislav.spaceball.databinding.ActivityMainBinding
 import com.rostislav.spaceball.services.tiktok.TikTokManager
 import com.rostislav.spaceball.util.Lottie
@@ -46,6 +48,9 @@ class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        DebugFlags.init(this)
+        if (DebugFlags.shots) AppOpenGate.resolve("screenshot mode")
 
         requestNotificationPermission()
         initialize()
