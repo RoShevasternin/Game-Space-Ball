@@ -75,6 +75,10 @@ adb logcat -d | grep " SFX " | awk '{for(i=1;i<=NF;i++) if($i=="SFX") print $(i+
 відносно `date`, перевірена по кадрах стрибка. Музику додавати в TikTok (Commercial Music
 Library), оригінальний звук у редакторі TikTok — на 30–50 %.
 
+Ролик 16:9 для YouTube / хедера сторінки Play — `tools/build_youtube_video.py` (ті самі
+записи `store/video/raw`, телефон із неоновою рамкою праворуч, підписи зліва, інтро та
+фінал на панорамі планет) → `store/video/spaceball_youtube_16x9.mp4`.
+
 ## Іконка
 
 `tools/make_icon_variants.py` малює варіанти адаптивної іконки (1024 px = 108dp, безпечна
