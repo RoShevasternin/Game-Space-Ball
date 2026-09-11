@@ -17,3 +17,4 @@ local.properties
 # Сирі кадри з телефона для маркетингових скрінів (25 МБ, перезнімаються — див. docs/TESTING.md)
 /store/raw/
 /store/video/raw/
+/store/event/_preview_*
